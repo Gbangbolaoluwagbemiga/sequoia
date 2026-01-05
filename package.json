@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Gbangbolaoluwagbemiga/sequoia/issues"
   },
-  "homepage": "https://github.com/Gbangbolaoluwagbemiga/sequoia#readme"
+  "homepage": "https://github.com/Gbangbolaoluwagbemiga/sequoia#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
 }
