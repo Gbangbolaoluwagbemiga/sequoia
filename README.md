@@ -59,4 +59,4 @@ npx hardhat run scripts/deploy.js --network baseSepolia
 
 ## Contract Address
 
-(To be updated after deployment)
+`0x1426f7bC5F7699AF2F125b710C41Fe6F6805C705` (Base Sepolia)

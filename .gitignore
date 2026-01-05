@@ -1,2 +1,18 @@
-.env
+# Node
 node_modules
+.env
+.DS_Store
+coverage
+coverage.json
+package-lock.json
+
+# Hardhat
+artifacts
+cache
+typechain
+typechain-types
+
+# Editors
+.idea
+.vscode
+*.swp
