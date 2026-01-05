@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia"
   },
   "repository": {
     "type": "git",
@@ -17,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/Gbangbolaoluwagbemiga/sequoia/issues"
   },
-  "homepage": "https://github.com/Gbangbolaoluwagbemiga/sequoia#readme"
+  "homepage": "https://github.com/Gbangbolaoluwagbemiga/sequoia#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "^2.28.2"
+  }
 }
