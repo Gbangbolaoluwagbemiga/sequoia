@@ -2,66 +2,111 @@
 pragma solidity ^0.8.19;
 
 contract Payeer {
-    // Array to store the names of participants
-    string[] public participants;
+    struct Session {
+        address[] participants;
+        uint256 entryFee;
+        bool isActive;
+        address winner;
+        uint256 totalPool;
+    }
 
-    // Event emitted when a new participant is added
-    event ParticipantAdded(string name);
-    
-    // Event emitted when a payer is selected
-    event PayerSelected(string name);
-    
-    // Event emitted when the list is reset
-    event Reset();
+    mapping(uint256 => Session) public sessions;
+    uint256 public nextSessionId;
+
+    event SessionCreated(uint256 indexed sessionId, uint256 entryFee, address creator);
+    event ParticipantJoined(uint256 indexed sessionId, address participant);
+    event WinnerSelected(uint256 indexed sessionId, address winner, uint256 prizeAmount);
 
     /**
-     * @dev Adds a new participant to the list.
-     * @param _name The name of the participant to add.
+     * @dev Creates a new betting session.
+     * @param _entryFee The amount of ETH required to join.
      */
-    function addParticipant(string memory _name) public {
-        require(bytes(_name).length > 0, "Name cannot be empty");
-        participants.push(_name);
-        emit ParticipantAdded(_name);
+    function createSession(uint256 _entryFee) public {
+        Session storage newSession = sessions[nextSessionId];
+        newSession.entryFee = _entryFee;
+        newSession.isActive = true;
+        
+        // Add creator as first participant? No, let them join explicitly or auto-join?
+        // Proposal: Creator just creates. Must join separately to pay fee. 
+        // This keeps logic cleaner.
+
+        emit SessionCreated(nextSessionId, _entryFee, msg.sender);
+        nextSessionId++;
     }
 
     /**
-     * @dev Selects a random participant to pay the bill.
-     * @return The name of the selected participant.
+     * @dev Joins an active session. Requires sending the exact entry fee.
+     * @param _sessionId The ID of the session to join.
      */
-    function pickPayer() public returns (string memory) {
-        require(participants.length > 0, "No participants to pick from");
+    function joinSession(uint256 _sessionId) public payable {
+        Session storage session = sessions[_sessionId];
+        require(session.isActive, "Session is not active");
+        require(msg.value == session.entryFee, "Incorrect entry fee");
 
-        // Generate a pseudo-random index
-        // Note: block.timestamp and block.prevrandao are not secure for high-stakes value,
-        // but sufficient for a simple bill-splitting app.
+        session.participants.push(msg.sender);
+        session.totalPool += msg.value;
+
+        emit ParticipantJoined(_sessionId, msg.sender);
+    }
+
+    /**
+     * @dev Selects a random winner and transfers the entire pool to them.
+     * @param _sessionId The ID of the session.
+     */
+    function spinWheel(uint256 _sessionId) public {
+        Session storage session = sessions[_sessionId];
+        require(session.isActive, "Session is not active");
+        require(session.participants.length > 0, "No participants");
+
+        // Simple Randomness (Not VRF for MVP, but good enough for friends)
         uint256 randomIndex = uint256(
             keccak256(
                 abi.encodePacked(
                     block.timestamp,
                     block.prevrandao,
-                    participants.length
+                    session.participants.length,
+                    session.totalPool
                 )
             )
-        ) % participants.length;
+        ) % session.participants.length;
 
-        string memory selectedPayer = participants[randomIndex];
-        emit PayerSelected(selectedPayer);
-        
-        return selectedPayer;
+        address winner = session.participants[randomIndex];
+        session.winner = winner;
+        session.isActive = false;
+
+        uint256 prizeAmount = session.totalPool;
+        session.totalPool = 0; // Reentrancy protection check
+
+        (bool success, ) = winner.call{value: prizeAmount}("");
+        require(success, "Transfer failed");
+
+        emit WinnerSelected(_sessionId, winner, prizeAmount);
     }
 
     /**
-     * @dev Returns the list of all participants.
+     * @dev Returns participants of a specific session.
      */
-    function getParticipants() public view returns (string[] memory) {
-        return participants;
+    function getParticipants(uint256 _sessionId) public view returns (address[] memory) {
+        return sessions[_sessionId].participants;
     }
 
     /**
-     * @dev Resets the list of participants.
+     * @dev Returns session details.
      */
-    function reset() public {
-        delete participants;
-        emit Reset();
+    function getSession(uint256 _sessionId) public view returns (
+        uint256 entryFee,
+        bool isActive,
+        address winner,
+        uint256 totalPool,
+        uint256 participantCount
+    ) {
+        Session storage session = sessions[_sessionId];
+        return (
+            session.entryFee,
+            session.isActive,
+            session.winner,
+            session.totalPool,
+            session.participants.length
+        );
     }
 }
