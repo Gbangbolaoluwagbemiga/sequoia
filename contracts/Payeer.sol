@@ -73,6 +73,7 @@ contract Payeer is Ownable {
     function joinSession(uint256 _sessionId, string memory _taunt) public payable {
         Session storage session = sessions[_sessionId];
         require(session.isActive, "Session is not active");
+        require(block.timestamp < session.createdAt + SESSION_TIMEOUT, "Session expired");
 
         if (session.tokenAddress == address(0)) {
             require(msg.value == session.entryFee, "Incorrect ETH entry fee");
