@@ -63,7 +63,7 @@ contract Payeer is Ownable, Pausable {
      * @param _tokenAddress The token to use (address(0) for ETH).
      * @param _passwordHash keccak256 hash of password (bytes32(0) for public).
      */
-    function createSession(string memory _title, uint256 _entryFee, address _tokenAddress, bytes32 _passwordHash) public {
+    function createSession(string memory _title, uint256 _entryFee, address _tokenAddress, bytes32 _passwordHash) public whenNotPaused {
         Session storage newSession = sessions[nextSessionId];
         newSession.title = _title;
         newSession.creator = msg.sender;
