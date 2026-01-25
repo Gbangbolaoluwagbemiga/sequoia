@@ -72,11 +72,16 @@ contract Payeer is Ownable {
      * @dev Joins an active session.
      * @param _sessionId The ID of the session to join.
      * @param _taunt A fun message to taunt other players.
+     * @param _password The password for private sessions ("" for public).
      */
-    function joinSession(uint256 _sessionId, string memory _taunt) public payable {
+    function joinSession(uint256 _sessionId, string memory _taunt, string memory _password) public payable {
         Session storage session = sessions[_sessionId];
         require(session.isActive, "Session is not active");
         require(block.timestamp < session.createdAt + SESSION_TIMEOUT, "Session expired");
+
+        if (session.passwordHash != bytes32(0)) {
+            require(keccak256(abi.encodePacked(_password)) == session.passwordHash, "Incorrect password");
+        }
 
         if (session.tokenAddress == address(0)) {
             require(msg.value == session.entryFee, "Incorrect ETH entry fee");
