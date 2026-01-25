@@ -16,6 +16,7 @@ contract Payeer is Ownable {
         bool isCancelled;
         address winner;
         uint256 totalPool;
+        uint256 createdAt;
         mapping(address => bool) hasRefunded;
         mapping(address => bool) isParticipant;
     }
