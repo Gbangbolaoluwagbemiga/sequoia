@@ -29,6 +29,38 @@ describe("Payeer", function () {
     });
   });
 
+  describe("Timeouts", function () {
+    it("Should allow refund after timeout", async function () {
+      await payeer.createSession("Timeout Session", ETH_FEE, ethers.ZeroAddress);
+      await payeer.connect(addr1).joinSession(0, "Waiter", { value: ETH_FEE });
+      
+      // Fast forward time
+      await ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60 + 1]);
+      await ethers.provider.send("evm_mine");
+
+      const balanceBefore = await ethers.provider.getBalance(addr1.address);
+      
+      // Claim refund
+      const tx = await payeer.connect(addr1).claimRefund(0);
+      const receipt = await tx.wait();
+      const gasUsed = receipt.gasUsed * receipt.gasPrice;
+
+      const balanceAfter = await ethers.provider.getBalance(addr1.address);
+      expect(balanceAfter + gasUsed).to.equal(balanceBefore + ETH_FEE);
+    });
+
+    it("Should prevent joining after timeout", async function () {
+      await payeer.createSession("Expired Session", ETH_FEE, ethers.ZeroAddress);
+      
+      // Fast forward
+      await ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60 + 1]);
+      await ethers.provider.send("evm_mine");
+
+      await expect(payeer.connect(addr1).joinSession(0, "Late", { value: ETH_FEE }))
+        .to.be.revertedWith("Session expired");
+    });
+  });
+
   describe("Cancellation and Refunds", function () {
     it("Should allow creator to cancel session", async function () {
       await payeer.createSession("Cancelled Session", ETH_FEE, ethers.ZeroAddress);
