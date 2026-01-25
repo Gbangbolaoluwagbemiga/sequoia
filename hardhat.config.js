@@ -9,6 +9,10 @@ module.exports = {
       url: "https://sepolia.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : (process.env['PRIVATE-KEY'] ? [process.env['PRIVATE-KEY']] : []),
     },
+    base: {
+      url: "https://mainnet.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : (process.env['PRIVATE-KEY'] ? [process.env['PRIVATE-KEY']] : []),
+    },
   },
   etherscan: {
     apiKey: process.env.BASESCAN_API_KEY || "C9CFD5REN63QS5AESUEF3WJ6EPPWJ2UN9R",
@@ -19,6 +23,14 @@ module.exports = {
         urls: {
           apiURL: "https://api-sepolia.basescan.org/api",
           browserURL: "https://sepolia.basescan.org"
+        }
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org"
         }
       }
     ]
