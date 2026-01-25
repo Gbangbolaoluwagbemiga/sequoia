@@ -52,8 +52,9 @@ contract Payeer is Ownable {
      * @param _title The title of the session.
      * @param _entryFee The amount of ETH/Token required to join.
      * @param _tokenAddress The token to use (address(0) for ETH).
+     * @param _passwordHash keccak256 hash of password (bytes32(0) for public).
      */
-    function createSession(string memory _title, uint256 _entryFee, address _tokenAddress) public {
+    function createSession(string memory _title, uint256 _entryFee, address _tokenAddress, bytes32 _passwordHash) public {
         Session storage newSession = sessions[nextSessionId];
         newSession.title = _title;
         newSession.creator = msg.sender;
@@ -61,8 +62,9 @@ contract Payeer is Ownable {
         newSession.tokenAddress = _tokenAddress;
         newSession.isActive = true;
         newSession.createdAt = block.timestamp;
+        newSession.passwordHash = _passwordHash;
         
-        emit SessionCreated(nextSessionId, _title, _entryFee, _tokenAddress, msg.sender);
+        emit SessionCreated(nextSessionId, _title, _entryFee, _tokenAddress, msg.sender, _passwordHash != bytes32(0));
         nextSessionId++;
     }
 
