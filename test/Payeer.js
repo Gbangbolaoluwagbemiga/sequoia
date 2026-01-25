@@ -31,8 +31,8 @@ describe("Payeer", function () {
 
   describe("Timeouts", function () {
     it("Should allow refund after timeout", async function () {
-      await payeer.createSession("Timeout Session", ETH_FEE, ethers.ZeroAddress);
-      await payeer.connect(addr1).joinSession(0, "Waiter", { value: ETH_FEE });
+      await payeer.createSession("Timeout Session", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
+      await payeer.connect(addr1).joinSession(0, "Waiter", "", { value: ETH_FEE });
       
       // Fast forward time
       await ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60 + 1]);
@@ -50,20 +50,20 @@ describe("Payeer", function () {
     });
 
     it("Should prevent joining after timeout", async function () {
-      await payeer.createSession("Expired Session", ETH_FEE, ethers.ZeroAddress);
+      await payeer.createSession("Expired Session", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
       
       // Fast forward
       await ethers.provider.send("evm_increaseTime", [7 * 24 * 60 * 60 + 1]);
       await ethers.provider.send("evm_mine");
 
-      await expect(payeer.connect(addr1).joinSession(0, "Late", { value: ETH_FEE }))
+      await expect(payeer.connect(addr1).joinSession(0, "Late", "", { value: ETH_FEE }))
         .to.be.revertedWith("Session expired");
     });
   });
 
   describe("Cancellation and Refunds", function () {
     it("Should allow creator to cancel session", async function () {
-      await payeer.createSession("Cancelled Session", ETH_FEE, ethers.ZeroAddress);
+      await payeer.createSession("Cancelled Session", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
       
       await expect(payeer.cancelSession(0))
         .to.emit(payeer, "SessionCancelled")
@@ -77,8 +77,8 @@ describe("Payeer", function () {
     });
 
     it("Should refund ETH participants", async function () {
-      await payeer.createSession("Refund ETH", ETH_FEE, ethers.ZeroAddress);
-      await payeer.connect(addr1).joinSession(0, "Refund me", { value: ETH_FEE });
+      await payeer.createSession("Refund ETH", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
+      await payeer.connect(addr1).joinSession(0, "Refund me", "", { value: ETH_FEE });
       
       await payeer.cancelSession(0);
 
@@ -96,11 +96,11 @@ describe("Payeer", function () {
     });
 
     it("Should refund ERC20 participants", async function () {
-      await payeer.createSession("Refund Token", TOKEN_FEE, mockToken.target);
+      await payeer.createSession("Refund Token", TOKEN_FEE, mockToken.target, ethers.ZeroHash);
       
       await mockToken.mint(addr1.address, TOKEN_FEE);
       await mockToken.connect(addr1).approve(payeer.target, TOKEN_FEE);
-      await payeer.connect(addr1).joinSession(0, "Refund me token");
+      await payeer.connect(addr1).joinSession(0, "Refund me token", "");
 
       await payeer.cancelSession(0);
 
@@ -112,11 +112,30 @@ describe("Payeer", function () {
     });
   });
 
+  describe("Private Sessions", function () {
+    it("Should create private session and require password", async function () {
+      const password = "secret123";
+      const passwordHash = ethers.keccak256(ethers.toUtf8Bytes(password));
+      
+      await expect(payeer.createSession("Private Party", ETH_FEE, ethers.ZeroAddress, passwordHash))
+        .to.emit(payeer, "SessionCreated")
+        .withArgs(0, "Private Party", ETH_FEE, ethers.ZeroAddress, owner.address, true);
+
+      // Fail with wrong password
+      await expect(payeer.connect(addr1).joinSession(0, "Wrong Pass", "wrong", { value: ETH_FEE }))
+        .to.be.revertedWith("Incorrect password");
+
+      // Success with correct password
+      await expect(payeer.connect(addr1).joinSession(0, "Right Pass", password, { value: ETH_FEE }))
+        .to.emit(payeer, "ParticipantJoined");
+    });
+  });
+
   describe("ETH Sessions", function () {
     it("Should create a session", async function () {
-      await expect(payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress))
+      await expect(payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash))
         .to.emit(payeer, "SessionCreated")
-        .withArgs(0, "Dinner Bill", ETH_FEE, ethers.ZeroAddress, owner.address);
+        .withArgs(0, "Dinner Bill", ETH_FEE, ethers.ZeroAddress, owner.address, false);
 
       const session = await payeer.getSession(0);
       expect(session.title).to.equal("Dinner Bill");
@@ -124,9 +143,9 @@ describe("Payeer", function () {
     });
 
     it("Should allow participants to join with ETH", async function () {
-      await payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress);
+      await payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
       
-      await expect(payeer.connect(addr1).joinSession(0, "I won't pay!", { value: ETH_FEE }))
+      await expect(payeer.connect(addr1).joinSession(0, "I won't pay!", "", { value: ETH_FEE }))
         .to.emit(payeer, "ParticipantJoined")
         .withArgs(0, addr1.address, "I won't pay!");
 
@@ -136,10 +155,10 @@ describe("Payeer", function () {
     });
 
     it("Should spin the wheel and distribute prizes/fees", async function () {
-      await payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress);
+      await payeer.createSession("Dinner Bill", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
       
-      await payeer.connect(addr1).joinSession(0, "Taunt 1", { value: ETH_FEE });
-      await payeer.connect(addr2).joinSession(0, "Taunt 2", { value: ETH_FEE });
+      await payeer.connect(addr1).joinSession(0, "Taunt 1", "", { value: ETH_FEE });
+      await payeer.connect(addr2).joinSession(0, "Taunt 2", "", { value: ETH_FEE });
 
       // Check owner balance before
       const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
@@ -162,13 +181,13 @@ describe("Payeer", function () {
 
   describe("ERC20 Sessions", function () {
     it("Should allow participants to join with ERC20", async function () {
-      await payeer.createSession("Poker Night", TOKEN_FEE, mockToken.target);
+      await payeer.createSession("Poker Night", TOKEN_FEE, mockToken.target, ethers.ZeroHash);
 
       // Mint tokens to users
       await mockToken.mint(addr1.address, TOKEN_FEE);
       await mockToken.connect(addr1).approve(payeer.target, TOKEN_FEE);
 
-      await expect(payeer.connect(addr1).joinSession(0, "All in!"))
+      await expect(payeer.connect(addr1).joinSession(0, "All in!", ""))
         .to.emit(payeer, "ParticipantJoined")
         .withArgs(0, addr1.address, "All in!");
         
@@ -176,16 +195,16 @@ describe("Payeer", function () {
     });
 
     it("Should distribute ERC20 prizes and fees", async function () {
-      await payeer.createSession("Poker Night", TOKEN_FEE, mockToken.target);
+      await payeer.createSession("Poker Night", TOKEN_FEE, mockToken.target, ethers.ZeroHash);
 
       // Setup users
       await mockToken.mint(addr1.address, TOKEN_FEE);
       await mockToken.connect(addr1).approve(payeer.target, TOKEN_FEE);
-      await payeer.connect(addr1).joinSession(0, "P1");
+      await payeer.connect(addr1).joinSession(0, "P1", "");
 
       await mockToken.mint(addr2.address, TOKEN_FEE);
       await mockToken.connect(addr2).approve(payeer.target, TOKEN_FEE);
-      await payeer.connect(addr2).joinSession(0, "P2");
+      await payeer.connect(addr2).joinSession(0, "P2", "");
 
       const initialOwnerBalance = await mockToken.balanceOf(owner.address);
 
