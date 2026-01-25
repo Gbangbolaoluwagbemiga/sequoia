@@ -266,7 +266,9 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Returns taunts of a specific session.
+     * @dev Returns the list of taunts for a session.
+     * @param _sessionId The ID of the session.
+     * @return An array of taunt strings.
      */
     function getTaunts(uint256 _sessionId) public view returns (string[] memory) {
         return sessions[_sessionId].taunts;
