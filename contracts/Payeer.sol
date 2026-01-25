@@ -30,6 +30,7 @@ contract Payeer is Ownable {
     event SessionCancelled(uint256 indexed sessionId);
     event FeeUpdated(uint256 newFee);
     event RefundClaimed(uint256 indexed sessionId, address participant, uint256 amount);
+    event NicknameSet(address indexed user, string nickname);
 
     constructor() Ownable(msg.sender) {}
 
