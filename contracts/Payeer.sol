@@ -126,7 +126,7 @@ contract Payeer is Ownable, Pausable {
      * @dev Claims refund for a cancelled session.
      * @param _sessionId The ID of the session.
      */
-    function claimRefund(uint256 _sessionId) public {
+    function claimRefund(uint256 _sessionId) public whenNotPaused {
         Session storage session = sessions[_sessionId];
         
         bool isExpired = block.timestamp >= session.createdAt + SESSION_TIMEOUT;
