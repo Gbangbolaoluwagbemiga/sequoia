@@ -39,6 +39,14 @@ contract Payeer is Ownable, Pausable {
 
     constructor() Ownable(msg.sender) {}
 
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
     /**
      * @dev Sets a nickname for the caller.
      * @param _nickname The desired nickname.
