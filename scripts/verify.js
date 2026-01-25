@@ -7,6 +7,16 @@ async function main() {
     return;
   }
   console.log("Verifying contract at:", contractAddress);
+
+  try {
+    await hre.run("verify:verify", {
+      address: contractAddress,
+      constructorArguments: [],
+    });
+    console.log("Verification successful");
+  } catch (error) {
+    console.error("Verification failed:", error);
+  }
 }
 
 main().catch((error) => {
