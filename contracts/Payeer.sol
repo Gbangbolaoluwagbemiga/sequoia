@@ -59,6 +59,7 @@ contract Payeer is Ownable {
         newSession.entryFee = _entryFee;
         newSession.tokenAddress = _tokenAddress;
         newSession.isActive = true;
+        newSession.createdAt = block.timestamp;
         
         emit SessionCreated(nextSessionId, _title, _entryFee, _tokenAddress, msg.sender);
         nextSessionId++;
