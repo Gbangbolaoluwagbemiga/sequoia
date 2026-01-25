@@ -156,8 +156,12 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Claims refund for a cancelled session.
+     * @dev Claims refund for a cancelled or expired session.
      * @param _sessionId The ID of the session.
+     * Requirements:
+     * - Session must be cancelled OR expired (7 days).
+     * - Caller must be a participant.
+     * - Caller must not have refunded yet.
      */
     function claimRefund(uint256 _sessionId) public whenNotPaused {
         Session storage session = sessions[_sessionId];
