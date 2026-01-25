@@ -188,6 +188,13 @@ contract Payeer is Ownable {
     }
 
     /**
+     * @dev Returns the nickname of a user.
+     */
+    function getNickname(address _user) public view returns (string memory) {
+        return nicknames[_user];
+    }
+
+    /**
      * @dev Returns taunts of a specific session.
      */
     function getTaunts(uint256 _sessionId) public view returns (string[] memory) {
