@@ -1,7 +1,12 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log("Verifying contract...");
+  const contractAddress = process.env.CONTRACT_ADDRESS;
+  if (!contractAddress) {
+    console.error("Please set CONTRACT_ADDRESS in .env");
+    return;
+  }
+  console.log("Verifying contract at:", contractAddress);
 }
 
 main().catch((error) => {
