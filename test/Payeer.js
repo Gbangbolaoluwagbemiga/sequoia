@@ -19,6 +19,16 @@ describe("Payeer", function () {
     payeer = await Payeer.deploy();
   });
 
+  describe("Nicknames", function () {
+    it("Should allow user to set nickname", async function () {
+      await expect(payeer.connect(addr1).setNickname("Alice"))
+        .to.emit(payeer, "NicknameSet")
+        .withArgs(addr1.address, "Alice");
+      
+      expect(await payeer.getNickname(addr1.address)).to.equal("Alice");
+    });
+  });
+
   describe("Cancellation and Refunds", function () {
     it("Should allow creator to cancel session", async function () {
       await payeer.createSession("Cancelled Session", ETH_FEE, ethers.ZeroAddress);
