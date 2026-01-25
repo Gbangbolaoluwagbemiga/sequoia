@@ -25,6 +25,7 @@ contract Payeer is Ownable {
     mapping(address => string) public nicknames;
     uint256 public nextSessionId;
     uint256 public platformFeePercentage = 1; // 1% fee
+    uint256 public constant SESSION_TIMEOUT = 7 days;
 
     event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address tokenAddress, address creator);
     event ParticipantJoined(uint256 indexed sessionId, address participant, string taunt);
