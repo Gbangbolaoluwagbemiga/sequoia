@@ -111,7 +111,9 @@ contract Payeer is Ownable {
      */
     function claimRefund(uint256 _sessionId) public {
         Session storage session = sessions[_sessionId];
-        require(session.isCancelled, "Session not cancelled");
+        
+        bool isExpired = block.timestamp >= session.createdAt + SESSION_TIMEOUT;
+        require(session.isCancelled || isExpired, "Session not cancelled or expired");
         require(session.isParticipant[msg.sender], "Not a participant");
         require(!session.hasRefunded[msg.sender], "Already refunded");
 
