@@ -57,14 +57,27 @@ npx hardhat test
 npx hardhat run scripts/deploy.js --network baseSepolia
 ```
 
+### Deploy to Base Mainnet
+
+```bash
+npx hardhat run scripts/deploy.js --network base
+```
+
 ## Contract Address
 
 `0x49879D6e369920C62bbB211826F21720BCAbF696` (Base Sepolia)
 
-## New Features (v2)
+## Features (v2)
 
 - **Sessions**: Create multiple betting sessions with custom titles.
 - **ERC20 Support**: Users can bet with any ERC20 token (e.g., USDC) or ETH.
 - **Platform Fees**: A 1% fee is collected from the pot to support the platform.
 - **Cancellation & Refunds**: Creators can cancel sessions, and participants can claim full refunds.
 - **Taunts**: Add a fun message when you join!
+
+## Features (v3)
+
+- **Nicknames**: Set a global nickname for your address.
+- **Session Timeouts**: Sessions expire after 7 days, allowing participants to claim refunds if no winner is selected.
+- **Private Sessions**: Create password-protected sessions for private groups.
+- **Emergency Pause**: Contract owner can pause critical functions in case of emergency.
