@@ -26,10 +26,19 @@ contract Payeer is Ownable, Pausable {
         mapping(address => bool) isParticipant;
     }
 
+    /// @dev Mapping of session ID to Session struct
     mapping(uint256 => Session) public sessions;
+    
+    /// @dev Mapping of user address to nickname
     mapping(address => string) public nicknames;
+    
+    /// @dev Counter for session IDs
     uint256 public nextSessionId;
+    
+    /// @dev Platform fee percentage (default 1%)
     uint256 public platformFeePercentage = 1; // 1% fee
+    
+    /// @dev Session timeout duration (7 days)
     uint256 public constant SESSION_TIMEOUT = 7 days;
 
     event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address tokenAddress, address creator, bool isPrivate);
