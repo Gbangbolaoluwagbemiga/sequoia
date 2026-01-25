@@ -28,7 +28,7 @@ contract Payeer is Ownable {
     uint256 public platformFeePercentage = 1; // 1% fee
     uint256 public constant SESSION_TIMEOUT = 7 days;
 
-    event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address tokenAddress, address creator);
+    event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address tokenAddress, address creator, bool isPrivate);
     event ParticipantJoined(uint256 indexed sessionId, address participant, string taunt);
     event WinnerSelected(uint256 indexed sessionId, address winner, uint256 prizeAmount, uint256 fee);
     event SessionCancelled(uint256 indexed sessionId);
