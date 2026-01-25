@@ -248,7 +248,9 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Returns participants of a specific session.
+     * @dev Returns the list of participants for a session.
+     * @param _sessionId The ID of the session.
+     * @return An array of participant addresses.
      */
     function getParticipants(uint256 _sessionId) public view returns (address[] memory) {
         return sessions[_sessionId].participants;
