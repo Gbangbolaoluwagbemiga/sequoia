@@ -3,35 +3,41 @@ pragma solidity ^0.8.19;
 
 contract Payeer {
     struct Session {
+        string title;
+        address creator;
         address[] participants;
         string[] taunts;
         uint256 entryFee;
         bool isActive;
+        bool isCancelled;
         address winner;
         uint256 totalPool;
     }
 
     mapping(uint256 => Session) public sessions;
+    mapping(uint256 => mapping(address => uint256)) public deposits; // Track deposits for refunds
     uint256 public nextSessionId;
 
-    event SessionCreated(uint256 indexed sessionId, uint256 entryFee, address creator);
+    event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address creator);
     event ParticipantJoined(uint256 indexed sessionId, address participant, string taunt);
     event WinnerSelected(uint256 indexed sessionId, address winner, uint256 prizeAmount);
+    event SessionCancelled(uint256 indexed sessionId);
+    event RefundClaimed(uint256 indexed sessionId, address participant, uint256 amount);
 
     /**
      * @dev Creates a new betting session.
+     * @param _title The title of the session.
      * @param _entryFee The amount of ETH required to join.
      */
-    function createSession(uint256 _entryFee) public {
+    function createSession(string memory _title, uint256 _entryFee) public {
         Session storage newSession = sessions[nextSessionId];
+        newSession.title = _title;
+        newSession.creator = msg.sender;
         newSession.entryFee = _entryFee;
         newSession.isActive = true;
+        newSession.isCancelled = false;
         
-        // Add creator as first participant? No, let them join explicitly or auto-join?
-        // Proposal: Creator just creates. Must join separately to pay fee. 
-        // This keeps logic cleaner.
-
-        emit SessionCreated(nextSessionId, _entryFee, msg.sender);
+        emit SessionCreated(nextSessionId, _title, _entryFee, msg.sender);
         nextSessionId++;
     }
 
@@ -104,16 +110,20 @@ contract Payeer {
      * @dev Returns session details.
      */
     function getSession(uint256 _sessionId) public view returns (
+        string memory title,
         uint256 entryFee,
         bool isActive,
+        bool isCancelled,
         address winner,
         uint256 totalPool,
         uint256 participantCount
     ) {
         Session storage session = sessions[_sessionId];
         return (
+            session.title,
             session.entryFee,
             session.isActive,
+            session.isCancelled,
             session.winner,
             session.totalPool,
             session.participants.length
