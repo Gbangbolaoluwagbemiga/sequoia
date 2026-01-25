@@ -185,8 +185,11 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Spins the wheel to select a winner.
+     * @dev Spins the wheel to select a random winner.
      * @param _sessionId The ID of the session.
+     * Requirements:
+     * - Session must be active.
+     * - Must have at least one participant.
      */
     function spinWheel(uint256 _sessionId) public whenNotPaused {
         Session storage session = sessions[_sessionId];
