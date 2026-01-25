@@ -1,7 +1,7 @@
 {
   "name": "payeer",
   "version": "1.0.0",
-  "description": "",
+  "description": "A decentralized bill splitting application on Base",
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
