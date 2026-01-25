@@ -12,8 +12,14 @@
     "type": "git",
     "url": "git+https://github.com/Gbangbolaoluwagbemiga/sequoia.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "base",
+    "ethereum",
+    "solidity",
+    "bill-splitting",
+    "dapp"
+  ],
+  "author": "Payeer Team",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
