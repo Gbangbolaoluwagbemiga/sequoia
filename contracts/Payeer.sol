@@ -16,6 +16,8 @@ contract Payeer is Ownable {
         bool isCancelled;
         address winner;
         uint256 totalPool;
+        mapping(address => bool) hasRefunded;
+        mapping(address => bool) isParticipant;
     }
 
     mapping(uint256 => Session) public sessions;
@@ -27,6 +29,7 @@ contract Payeer is Ownable {
     event WinnerSelected(uint256 indexed sessionId, address winner, uint256 prizeAmount, uint256 fee);
     event SessionCancelled(uint256 indexed sessionId);
     event FeeUpdated(uint256 newFee);
+    event RefundClaimed(uint256 indexed sessionId, address participant, uint256 amount);
 
     constructor() Ownable(msg.sender) {}
 
@@ -66,9 +69,48 @@ contract Payeer is Ownable {
 
         session.participants.push(msg.sender);
         session.taunts.push(_taunt);
+        session.isParticipant[msg.sender] = true;
         session.totalPool += session.entryFee;
 
         emit ParticipantJoined(_sessionId, msg.sender, _taunt);
+    }
+
+    /**
+     * @dev Cancels a session. Only creator can cancel.
+     * @param _sessionId The ID of the session to cancel.
+     */
+    function cancelSession(uint256 _sessionId) public {
+        Session storage session = sessions[_sessionId];
+        require(msg.sender == session.creator, "Only creator can cancel");
+        require(session.isActive, "Session not active");
+        
+        session.isActive = false;
+        session.isCancelled = true;
+        
+        emit SessionCancelled(_sessionId);
+    }
+
+    /**
+     * @dev Claims refund for a cancelled session.
+     * @param _sessionId The ID of the session.
+     */
+    function claimRefund(uint256 _sessionId) public {
+        Session storage session = sessions[_sessionId];
+        require(session.isCancelled, "Session not cancelled");
+        require(session.isParticipant[msg.sender], "Not a participant");
+        require(!session.hasRefunded[msg.sender], "Already refunded");
+
+        session.hasRefunded[msg.sender] = true;
+        uint256 refundAmount = session.entryFee;
+
+        if (session.tokenAddress == address(0)) {
+            (bool success, ) = msg.sender.call{value: refundAmount}("");
+            require(success, "Refund failed");
+        } else {
+            IERC20(session.tokenAddress).transfer(msg.sender, refundAmount);
+        }
+
+        emit RefundClaimed(_sessionId, msg.sender, refundAmount);
     }
 
     /**
@@ -143,9 +185,11 @@ contract Payeer is Ownable {
     
     function getSession(uint256 _sessionId) public view returns (
         string memory title,
+        address creator,
         uint256 entryFee,
         address tokenAddress,
         bool isActive,
+        bool isCancelled,
         address winner,
         uint256 totalPool,
         uint256 participantCount
@@ -153,9 +197,11 @@ contract Payeer is Ownable {
         Session storage session = sessions[_sessionId];
         return (
             session.title,
+            session.creator,
             session.entryFee,
             session.tokenAddress,
             session.isActive,
+            session.isCancelled,
             session.winner,
             session.totalPool,
             session.participants.length
