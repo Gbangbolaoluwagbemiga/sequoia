@@ -19,6 +19,34 @@ describe("Payeer", function () {
     payeer = await Payeer.deploy();
   });
 
+  describe("Pausable", function () {
+    it("Should allow owner to pause and unpause", async function () {
+      await payeer.pause();
+      
+      await expect(payeer.createSession("Paused", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash))
+        .to.be.revertedWithCustomError(payeer, "EnforcedPause");
+
+      await payeer.unpause();
+      
+      await expect(payeer.createSession("Unpaused", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash))
+        .to.emit(payeer, "SessionCreated");
+    });
+
+    it("Should prevent joining when paused", async function () {
+      await payeer.createSession("Active", ETH_FEE, ethers.ZeroAddress, ethers.ZeroHash);
+      
+      await payeer.pause();
+      
+      await expect(payeer.connect(addr1).joinSession(0, "Try join", "", { value: ETH_FEE }))
+        .to.be.revertedWithCustomError(payeer, "EnforcedPause");
+        
+      await payeer.unpause();
+      
+      await expect(payeer.connect(addr1).joinSession(0, "Join now", "", { value: ETH_FEE }))
+        .to.emit(payeer, "ParticipantJoined");
+    });
+  });
+
   describe("Nicknames", function () {
     it("Should allow user to set nickname", async function () {
       await expect(payeer.connect(addr1).setNickname("Alice"))
