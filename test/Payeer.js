@@ -17,21 +17,23 @@ describe("Payeer", function () {
 
   it("Should create a new session", async function () {
     const entryFee = ethers.parseEther("1");
-    await payeer.createSession(entryFee);
+    await payeer.createSession("Dinner", entryFee);
 
     // Check nextSessionId incremented
     expect(await payeer.nextSessionId()).to.equal(1);
 
     // Check session details
     const session = await payeer.getSession(0);
+    expect(session.title).to.equal("Dinner");
     expect(session.entryFee).to.equal(entryFee);
     expect(session.isActive).to.equal(true);
+    expect(session.isCancelled).to.equal(false);
     expect(session.participantCount).to.equal(0);
   });
 
   it("Should allow participants to join", async function () {
     const entryFee = ethers.parseEther("1");
-    await payeer.createSession(entryFee);
+    await payeer.createSession("Drinks", entryFee);
 
     await payeer.connect(addr1).joinSession(0, "I win!", { value: entryFee });
     await payeer.connect(addr2).joinSession(0, "No, I win!", { value: entryFee });
@@ -48,7 +50,7 @@ describe("Payeer", function () {
 
   it("Should fail if entry fee is incorrect", async function () {
     const entryFee = ethers.parseEther("1");
-    await payeer.createSession(entryFee);
+    await payeer.createSession("Poker", entryFee);
 
     await expect(
       payeer.connect(addr1).joinSession(0, "Fail", { value: ethers.parseEther("0.5") })
@@ -57,16 +59,11 @@ describe("Payeer", function () {
 
   it("Should pick a winner and distribute funds", async function () {
     const entryFee = ethers.parseEther("1");
-    await payeer.createSession(entryFee);
+    await payeer.createSession("Lottery", entryFee);
 
     await payeer.connect(addr1).joinSession(0, "A", { value: entryFee });
     await payeer.connect(addr2).joinSession(0, "B", { value: entryFee });
     await payeer.connect(addr3).joinSession(0, "C", { value: entryFee });
-
-    // Track balances before spin
-    const balanceBefore1 = await ethers.provider.getBalance(addr1.address);
-    const balanceBefore2 = await ethers.provider.getBalance(addr2.address);
-    const balanceBefore3 = await ethers.provider.getBalance(addr3.address);
 
     const tx = await payeer.spinWheel(0);
     await tx.wait();
@@ -76,16 +73,41 @@ describe("Payeer", function () {
     expect(session.totalPool).to.equal(0);
     expect(session.winner).to.not.equal(ethers.ZeroAddress);
 
-    // One of them should have won 3 ETH (minus gas fees strictly speaking, but let's check contract logic)
-    // Checking exact balances is hard due to gas fees.
-    // Let's create a non-miner/non-tx-sender account check to avoid gas confusion if possible,
-    // or just check the event logs.
-
-    // Using event check:
-    const receipt = await tx.wait();
-    // Ethers v6 event parsing might need specific handling or we can just trust the state check above for now.
-    // But let's verify the contract balance is zero.
     const contractBalance = await ethers.provider.getBalance(payeer.target);
     expect(contractBalance).to.equal(0);
+  });
+
+  it("Should allow creator to cancel and participants to refund", async function () {
+    const entryFee = ethers.parseEther("1");
+    await payeer.createSession("Cancelled Party", entryFee);
+
+    await payeer.connect(addr1).joinSession(0, "A", { value: entryFee });
+    
+    // Non-creator cannot cancel
+    await expect(
+        payeer.connect(addr1).cancelSession(0)
+    ).to.be.revertedWith("Only creator can cancel");
+
+    // Creator cancels
+    await payeer.cancelSession(0);
+    const session = await payeer.getSession(0);
+    expect(session.isCancelled).to.equal(true);
+    expect(session.isActive).to.equal(false);
+
+    // Participant claims refund
+    const balanceBefore = await ethers.provider.getBalance(addr1.address);
+    // Gas cost makes it hard to check exact diff, but we can check the call succeeds
+    const tx = await payeer.connect(addr1).claimRefund(0);
+    await tx.wait(); // This will cost gas
+
+    // Check deposit cleared
+    // We can't access mapping easily in tests without a getter unless public, 
+    // but the public mapping getter requires key.
+    // Let's assume logic holds if no revert.
+    
+    // Try to claim again should fail
+    await expect(
+        payeer.connect(addr1).claimRefund(0)
+    ).to.be.revertedWith("No funds to claim");
   });
 });
