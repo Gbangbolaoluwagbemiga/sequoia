@@ -21,6 +21,7 @@ contract Payeer is Ownable {
     }
 
     mapping(uint256 => Session) public sessions;
+    mapping(address => string) public nicknames;
     uint256 public nextSessionId;
     uint256 public platformFeePercentage = 1; // 1% fee
 
