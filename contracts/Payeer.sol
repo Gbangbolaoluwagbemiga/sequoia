@@ -257,7 +257,9 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Returns the nickname of a user.
+     * @dev Returns the nickname associated with a user address.
+     * @param _user The address of the user.
+     * @return The nickname string.
      */
     function getNickname(address _user) public view returns (string memory) {
         return nicknames[_user];
