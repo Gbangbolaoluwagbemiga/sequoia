@@ -59,11 +59,12 @@ npx hardhat run scripts/deploy.js --network baseSepolia
 
 ## Contract Address
 
-`0x72bee2F9e928FF6e3c5c305e0bBCb7e5E4aB32F1` (Base Sepolia)
+`0x49879D6e369920C62bbB211826F21720BCAbF696` (Base Sepolia)
 
 ## New Features (v2)
 
 - **Sessions**: Create multiple betting sessions with custom titles.
 - **ERC20 Support**: Users can bet with any ERC20 token (e.g., USDC) or ETH.
 - **Platform Fees**: A 1% fee is collected from the pot to support the platform.
+- **Cancellation & Refunds**: Creators can cancel sessions, and participants can claim full refunds.
 - **Taunts**: Add a fun message when you join!
