@@ -148,10 +148,10 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Selects a random winner.
+     * @dev Spins the wheel to select a winner.
      * @param _sessionId The ID of the session.
      */
-    function spinWheel(uint256 _sessionId) public {
+    function spinWheel(uint256 _sessionId) public whenNotPaused {
         Session storage session = sessions[_sessionId];
         require(session.isActive, "Session is not active");
         require(session.participants.length > 0, "No participants");
