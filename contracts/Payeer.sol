@@ -17,6 +17,7 @@ contract Payeer is Ownable {
         address winner;
         uint256 totalPool;
         uint256 createdAt;
+        bytes32 passwordHash; // 0x0 if public
         mapping(address => bool) hasRefunded;
         mapping(address => bool) isParticipant;
     }
