@@ -36,6 +36,15 @@ contract Payeer is Ownable {
     constructor() Ownable(msg.sender) {}
 
     /**
+     * @dev Sets a nickname for the caller.
+     * @param _nickname The desired nickname.
+     */
+    function setNickname(string memory _nickname) public {
+        nicknames[msg.sender] = _nickname;
+        emit NicknameSet(msg.sender, _nickname);
+    }
+
+    /**
      * @dev Creates a new betting session.
      * @param _title The title of the session.
      * @param _entryFee The amount of ETH/Token required to join.
