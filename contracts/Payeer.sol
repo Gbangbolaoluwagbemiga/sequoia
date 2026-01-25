@@ -41,12 +41,25 @@ contract Payeer is Ownable, Pausable {
     /// @dev Session timeout duration (7 days)
     uint256 public constant SESSION_TIMEOUT = 7 days;
 
+    /// @dev Emitted when a new session is created
     event SessionCreated(uint256 indexed sessionId, string title, uint256 entryFee, address tokenAddress, address creator, bool isPrivate);
+    
+    /// @dev Emitted when a participant joins a session
     event ParticipantJoined(uint256 indexed sessionId, address participant, string taunt);
+    
+    /// @dev Emitted when a winner is selected
     event WinnerSelected(uint256 indexed sessionId, address winner, uint256 prizeAmount, uint256 fee);
+    
+    /// @dev Emitted when a session is cancelled
     event SessionCancelled(uint256 indexed sessionId);
+    
+    /// @dev Emitted when platform fee is updated
     event FeeUpdated(uint256 newFee);
+    
+    /// @dev Emitted when a refund is claimed
     event RefundClaimed(uint256 indexed sessionId, address participant, uint256 amount);
+    
+    /// @dev Emitted when a user sets their nickname
     event NicknameSet(address indexed user, string nickname);
 
     constructor() Ownable(msg.sender) {}
