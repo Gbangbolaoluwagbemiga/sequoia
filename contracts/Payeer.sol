@@ -47,6 +47,10 @@ contract Payeer is Ownable, Pausable {
         _pause();
     }
 
+    /**
+     * @dev Unpauses the contract.
+     * Only the owner can call this function.
+     */
     function unpause() public onlyOwner {
         _unpause();
     }
