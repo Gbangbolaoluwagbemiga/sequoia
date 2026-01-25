@@ -83,7 +83,7 @@ contract Payeer is Ownable, Pausable {
      * @param _taunt A fun message to taunt other players.
      * @param _password The password for private sessions ("" for public).
      */
-    function joinSession(uint256 _sessionId, string memory _taunt, string memory _password) public payable {
+    function joinSession(uint256 _sessionId, string memory _taunt, string memory _password) public payable whenNotPaused {
         Session storage session = sessions[_sessionId];
         require(session.isActive, "Session is not active");
         require(block.timestamp < session.createdAt + SESSION_TIMEOUT, "Session expired");
