@@ -235,7 +235,11 @@ contract Payeer is Ownable, Pausable {
     }
 
     /**
-     * @dev Updates the platform fee.
+     * @dev Updates the platform fee percentage.
+     * @param _fee The new fee percentage (0-100).
+     * Requirements:
+     * - Fee cannot exceed 10%.
+     * - Only owner can call.
      */
     function setPlatformFee(uint256 _fee) public onlyOwner {
         require(_fee <= 10, "Fee cannot exceed 10%");
