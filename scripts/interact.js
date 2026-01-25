@@ -10,6 +10,13 @@ async function main() {
   const Payeer = await hre.ethers.getContractFactory("Payeer");
   const payeer = await Payeer.attach(contractAddress);
   console.log("Attached to Payeer at:", contractAddress);
+
+  // Read state
+  const nextSessionId = await payeer.nextSessionId();
+  console.log("Next Session ID:", nextSessionId.toString());
+  
+  const platformFee = await payeer.platformFeePercentage();
+  console.log("Platform Fee:", platformFee.toString() + "%");
 }
 
 main().catch((error) => {
