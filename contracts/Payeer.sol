@@ -39,6 +39,10 @@ contract Payeer is Ownable, Pausable {
 
     constructor() Ownable(msg.sender) {}
 
+    /**
+     * @dev Pauses the contract.
+     * Only the owner can call this function.
+     */
     function pause() public onlyOwner {
         _pause();
     }
