@@ -274,6 +274,19 @@ contract Payeer is Ownable, Pausable {
         return sessions[_sessionId].taunts;
     }
     
+    /**
+     * @dev Returns detailed information about a session.
+     * @param _sessionId The ID of the session.
+     * @return title The title of the session.
+     * @return creator The address of the session creator.
+     * @return entryFee The entry fee amount.
+     * @return tokenAddress The address of the ERC20 token (or address(0) for ETH).
+     * @return isActive Whether the session is currently active.
+     * @return isCancelled Whether the session has been cancelled.
+     * @return winner The address of the winner (if selected).
+     * @return totalPool The total amount in the pool.
+     * @return participantCount The number of participants.
+     */
     function getSession(uint256 _sessionId) public view returns (
         string memory title,
         address creator,
