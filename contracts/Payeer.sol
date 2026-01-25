@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract Payeer is Ownable, Pausable {
+    /**
+     * @dev Struct to store session details.
+     */
     struct Session {
         string title;
         address creator;
