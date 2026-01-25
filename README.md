@@ -65,6 +65,7 @@ npx hardhat run scripts/deploy.js --network base
 
 ## Contract Address
 
+`0xaA101687765a8e379b1686404950b253Aa5517E1` (Base Mainnet)
 `0x49879D6e369920C62bbB211826F21720BCAbF696` (Base Sepolia)
 
 ## Features (v2)
